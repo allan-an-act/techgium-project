@@ -1,0 +1,40 @@
+classroom corridor    elevator   lib    staircase      
+door     window     chair       table       
+animal    vehicle  
+
+
+
+
+
+
+// Online C compiler to run C program online
+#include <stdio.h>
+
+int main() {
+    int i=1;
+    int k=1;
+    int z=0;
+    int j=0;
+    int c=1;
+    while (k<=5){
+        
+        while (i<=5){
+            z=z+i;
+            printf("%d ",z);
+            i=i+1;
+        }
+        printf("\n");
+        c=c+k;
+        printf("%d ",c);
+        k=k+1;
+        
+        
+    }
+
+    return 0;
+}
+
+
+
+
+

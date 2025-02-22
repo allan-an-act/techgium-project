@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.form-card h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555555;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 5px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+input:focus {
+    border-color: #0056b3;
+    outline: none;
+}
+
+.btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666666;
+}
+
+p a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+    </style>
+    </html>
+    <body>
+        <div class="login-container">
+            <div class="form-card">
+                <h2>Vendor Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="vendor_name">Vendor Name</label>
+                        <input type="text" id="vendor_name" name="vendor_name" placeholder="Enter your vendor name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <p id="error-message" style="color: red; display: none;"></p>
+                <p>Don't have an account? <a href="/vendor_details">Sign up here</a>.</p>
+            </div>
+        </div>
+    
+        <script>
+            document.getElementById("login-form").addEventListener("submit", async function (event) {
+                event.preventDefault();
+    
+                const vendor_name = document.getElementById("vendor_name").value.trim();
+                const password = document.getElementById("password").value.trim();
+                const errorMessage = document.getElementById("error-message");
+    
+                console.log("🔹 Sending request:", { vendor_name, password });
+    
+                try {
+                    const response = await fetch("http://localhost:3000/vlogin", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ vendor_name, password }),
+                    });
+    
+                    const data = await response.json();
+                    console.log("🔹 Server response:", data);
+    
+                    if (!data.success) {
+                        errorMessage.style.display = "block";
+                        errorMessage.textContent = data.message;
+                    } else {
+                        window.location.href = data.redirect;
+                    }
+                } catch (error) {
+                    console.error("🔴 Error:", error);
+                    errorMessage.style.display = "block";
+                    errorMessage.textContent = "Server error. Please try again later.";
+                }
+            });
+        </script>
+    </body>
+    
+<!-- </head>
+<body>
+    <div class="login-container">
+        <div class="form-card">
+            <h2>Vendor Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <p id="error-message" style="color: red; display: none;"></p>
+            <p >Don't have an account? <a href="/vendor_details">Sign up here</a>.</p>
+        </div>
+    </div>
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const vendor_name = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorMessage = document.getElementById("error-message");
+            console.log("Sending request:", { vendor_name, password }); // ✅ Debugging line
+
+            try {
+                const response = await fetch("http://localhost:3000/vlogin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vendor_name, password }),
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    errorMessage.style.display = "block";
+                    errorMessage.textContent = data.message;
+                } else {
+                    alert("Login successful!");
+                    window.location.href = "/admin_dashboard"; // Redirect to dashboard
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                errorMessage.style.display = "block";
+                errorMessage.textContent = "Server error. Please try again later.";
+            }
+        });
+    </script>
+</body> -->
+</html>

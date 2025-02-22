@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Details Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        form input,
+        form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        form input[type="file"] {
+            padding: 5px;
+        }
+
+        form button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Enter Company Details (Recycling Company)</h1>
+    </header>
+
+    <div class="container">
+        <h2>Company Information</h2>
+
+        <form id="company-form" action="/admin_dashboard" method="post" enctype="multipart/form-data">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="user" required>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="pass">Password:</label>
+            <input type="password" id="pass" name="pass" required>
+
+            <label for="cpass">Confirm Password:</label>
+            <input type="password" id="cpass" name="cpass" required>
+
+            <label for="company-name">Company Name:</label>
+            <input type="text" id="company-name" name="company_name" required>
+
+            <label for="company-address">Company Address:</label>
+            <textarea id="company-address" name="company_address" rows="3" required></textarea>
+
+            <label for="md-name">Managing Director (MD) Name:</label>
+            <input type="text" id="md-name" name="md_name" required>
+
+            <label for="md-address">Managing Director Address:</label>
+            <textarea id="md-address" name="md_address" rows="3" required></textarea>
+
+            <label for="md-phone">Managing Director Phone Number:</label>
+            <input type="tel" id="md-phone" name="md_phone" required>
+
+            <label for="company-phone">Company Phone Number:</label>
+            <input type="tel" id="company-phone" name="company_phone" required>
+
+            <label for="start-year">Year of Starting Company:</label>
+            <input type="number" id="start-year" name="start_year" required>
+
+            <label for="certification-number">Certification Number:</label>
+            <input type="text" id="certification-number" name="certification_number" required>
+
+            <label for="certification-document">Attach Certification Document:</label>
+            <input type="file" id="certification-document" name="certification_document" required>
+
+            <button type="submit">Submit Details</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("company-form").addEventListener("submit", function(event) {
+            const pass = document.getElementById("pass").value;
+            const cpass = document.getElementById("cpass").value;
+            if (pass !== cpass) {
+                alert("Passwords do not match!");
+                event.preventDefault();
+            }
+        });
+    </script>
+
+</body>
+</html>

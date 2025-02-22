@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrative Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px auto;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: white;
+            width: 100%;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            margin: 5px 0;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .tracking-section, .vendor-list, .reports, .approval-section {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f0f0f0;
+        }
+
+        .approve-btn {
+            background-color: #28a745;
+        }
+
+        .approve-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Administrative Dashboard</h1>
+    </header>
+
+    <div class="container">
+
+        <!-- Tracking Section -->
+        <div class="card tracking-section">
+            <h3>Real-Time Tracking</h3>
+            <p>Track e-waste collection vehicles in real-time.</p>
+            <button class="btn" id="track-vehicles">Track Now</button>
+        </div>
+
+        <!-- Vendor List Section -->
+        <div class="card vendor-list">
+            <h3>Vendor List</h3>
+            <p>View the list of registered vendors.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vendor Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="vendor-table">
+                    <!-- Dynamically populated rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Report Section -->
+        <div class="card reports">
+            <h3>Generate Reports</h3>
+            <p>Download reports of e-waste management activities.</p>
+            <button class="btn" id="generate-report">Download Report</button>
+        </div>
+
+        <!-- Approve Vendors Section -->
+        <div class="card approval-section">
+            <h3>Approve Vendors</h3>
+            <p>Approve pending vendor registrations.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vendor Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="approval-table">
+                    <!-- Dynamically populated rows -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // Example Data for Vendor List and Approvals
+        const vendorList = [
+            { name: "Vendor A", email: "vendora@example.com", phone: "1234567890", status: "Approved" },
+            { name: "Vendor B", email: "vendorb@example.com", phone: "9876543210", status: "Pending" }
+        ];
+
+        const approvalList = [
+            { name: "Vendor C", email: "vendorc@example.com", phone: "4561237890" },
+            { name: "Vendor D", email: "vendord@example.com", phone: "3217896540" }
+        ];
+
+        // Populate Vendor Table
+        const vendorTable = document.getElementById('vendor-table');
+        vendorList.forEach(vendor => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${vendor.name}</td>
+                <td>${vendor.email}</td>
+                <td>${vendor.phone}</td>
+                <td>${vendor.status}</td>
+            `;
+            vendorTable.appendChild(row);
+        });
+
+        // Populate Approvals Table
+        const approvalTable = document.getElementById('approval-table');
+        approvalList.forEach(vendor => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${vendor.name}</td>
+                <td>${vendor.email}</td>
+                <td>${vendor.phone}</td>
+                <td><button class="btn approve-btn" onclick="approveVendor('${vendor.name}')">Approve</button></td>
+            `;
+            approvalTable.appendChild(row);
+        });
+
+        // Approve Vendor Functionality
+        function approveVendor(vendorName) {
+            alert(`Vendor ${vendorName} has been approved.`);
+            // You can also implement a server call here to update the vendor's status.
+        }
+
+        // Tracking Button
+        document.getElementById('track-vehicles').onclick = function() {
+            alert("Redirecting to tracking system...");
+            // Replace with the actual tracking URL.
+            window.location.href = "tracking.html";
+        };
+
+        // Generate Report Button
+        document.getElementById('generate-report').onclick = function() {
+            alert("Report is being generated...");
+            // Replace with report generation logic (download CSV or PDF).
+        };
+    </script>
+
+</body>
+</html>

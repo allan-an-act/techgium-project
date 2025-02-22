@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Date and Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .date-time {
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1em;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Set Date and Time</h1>
+    </header>
+
+    <div class="container">
+        <h2>Vendor: Set Date and Time</h2>
+
+        <p class="date-time">
+            <strong>Date:</strong> <input type="date" id="vendor-date">
+        </p>
+
+        <p class="date-time">
+            <strong>Set Time:</strong> 
+            <input type="time" id="vendor-time1">
+        </p>
+
+        <p class="date-time">
+            <strong>Set Time:</strong> 
+            <input type="time" id="vendor-time2">
+        </p>
+
+        <p class="date-time">
+            <strong>Set Time:</strong> 
+            <input type="time" id="vendor-time3">
+        </p>
+
+        <button class="btn" id="set-time-btn">Set Date and Time</button>
+    </div>
+
+    <script>
+        document.getElementById('set-time-btn').onclick = function() {
+            const vendorDate = document.getElementById('vendor-date').value;
+            const vendorTime1 = document.getElementById('vendor-time1').value;
+            const vendorTime2 = document.getElementById('vendor-time2').value;
+            const vendorTime3 = document.getElementById('vendor-time3').value;
+
+            if (vendorDate && vendorTime1 && vendorTime2 && vendorTime3) {
+                // Store the date and three times in localStorage
+                localStorage.setItem('vendorDate', vendorDate);
+                localStorage.setItem('vendorTime1', vendorTime1);
+                localStorage.setItem('vendorTime2', vendorTime2);
+                localStorage.setItem('vendorTime3', vendorTime3);
+
+                // Redirect to the second page to display the selected values
+                window.location.href = "select_time.html"; // Redirect to the next page
+            } else {
+                alert('Please select both date and all times.');
+            }
+        };
+    </script>
+
+</body>
+</html>

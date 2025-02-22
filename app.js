@@ -1,0 +1,176 @@
+const express = require("express");
+const multer = require("multer");
+const mongoose = require("mongoose");
+const path = require("path");
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const nodemailer = require("nodemailer");
+const bodyParser = require("body-parser");
+
+const {sendOtp}=require("./otp");
+const {db, users, BulkUser, Company,Vendor,Email,router}=require("./company");
+const app = express();
+const PORT = 3000;
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'home.html'));
+});
+
+app.get('/admin_dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'admin_dashboard.html'));
+});
+
+app.get('/bulk_user_form', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'bulk_user_form.html'));
+});
+
+app.get('/company_details_form', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'company_details_form.html'));
+});
+
+app.get('/confirmation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'confirmation.html'));
+});
+
+app.get('/individual_user_form', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'individual_user_form.html'));
+});
+
+// app.get('/login', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'views', 'login.html'));
+// });
+
+app.get('/notification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'notification.html'));
+});
+
+app.get('/IN_otp_verification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'IN_otp_verification.html'));
+});
+
+app.get('/BU_otp_verification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'BU_otp_verification.html'));
+});
+
+app.get('/select_time', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'select_time.html'));
+});
+
+app.get('/set_date_time', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'set_date_time.html'));
+});
+
+app.get('/show_details', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'show_details.html'));
+});
+
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+});
+
+app.get('/vendor_details', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'vendor_details.html'));
+});
+
+app.get('/verification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'verification.html'));
+});
+
+app.get('/login_page_vendor', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login_page_vendor.html'));
+});
+
+app.get('/login_company', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login_company.html'));
+});
+
+app.get('/admin_login-xyzabc123', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'admin_login-xyzabc123.html'));
+});
+
+app.get('/BU_verification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'BU_verification.html'));
+});
+
+app.get('/IN_verification', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'IN_verification.html'));
+});
+
+app.get('/demoo_next', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'demoo_next.html'));
+});
+
+// Middleware
+app.use(express.static("public")); 
+app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+app.use(cors({ origin: "http://localhost:3000" }));
+app.use(bodyParser.json());
+app.post("/sendOtp", sendOtp);
+
+// Serve HTML Pages
+app.use(express.static(path.join(__dirname, 'views')));
+app.use("/", router);
+//login page
+app.post("/login", async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Find user in MongoDB
+        const user = await Company.findOne({ username });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+        // Compare entered password with stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log(user.password,password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Invalid password" });
+        }
+
+        // On successful login, send success response
+        res.json({ success: true, message: "Login successful", redirect: "/admin_dashboard" });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+app.post("/vlogin", async (req, res) => {
+    try {
+        const { vendor_name, password } = req.body;
+
+        if (!vendor_name || !password) {
+            return res.status(400).json({ success: false, message: "Vendor name and password are required" });
+        }
+
+        // Find vendor in MongoDB (case-insensitive)
+        const vendor = await Vendor.findOne({ vendor_name: new RegExp(`^${vendor_name}$`, "i") });
+
+        console.log("Vendor found:", vendor);
+
+        if (!vendor) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+
+        // Compare entered password with stored hashed password
+        const isMatch = await bcrypt.compare(password, vendor.password);
+        console.log("Password match:", isMatch);
+
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Invalid password" });
+        }
+
+        res.json({ success: true, message: "Login successful", redirect: "/admin_dashboard" });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        res.status(500).json({ success: false, message: "Server error. Please try again later." });
+    }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
