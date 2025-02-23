@@ -1,5 +1,111 @@
 <!DOCTYPE html>
-<HTML>
-    <HEAD></HEAD>
-    <BODY>SUCCESS</BODY>
-</HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #007bff;
+            color: white;
+            padding: 15px;
+        }
+        .user-icon {
+            display: flex;
+            align-items: center;
+        }
+        .user-icon img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .ewaste-item {
+            display: flex;
+            justify-content: space-between;
+            background: #e9ecef;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .user-details {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Dashboard</h2>
+        <div class="user-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User Icon">
+            <span id="userEmail">Loading...</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>User Details</h3>
+        <div class="user-details">
+            <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+            <p><strong>Address:</strong> <span id="userAddress">Loading...</span></p>
+            <p><strong>City:</strong> <span id="userCity">Loading...</span></p>
+            <p><strong>State:</strong> <span id="userState">Loading...</span></p>
+        </div>
+
+        <h3>Your E-Waste Submissions</h3>
+        <div id="ewasteList">
+            <!-- E-Waste Items will be loaded here -->
+        </div>
+
+        <h3>Add More E-Waste</h3>
+        <form class="add-form" id="addEwasteForm">
+            <input type="text" id="ewasteType" placeholder="E-Waste Type" required>
+            <input type="number" id="quantity" placeholder="Quantity (kg)" required>
+            <button type="submit" class="btn">Add E-Waste</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get("email");
+            if (email) {
+                var storedEmail = email;
+                console.log("Stored Email:", storedEmail);
+                document.getElementById("userEmail").innerText = storedEmail;
+            }
+        });
+
+    </script>
+
+</body>
+</html>

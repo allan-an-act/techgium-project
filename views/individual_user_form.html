@@ -86,6 +86,7 @@
       const formData = {
         name: document.getElementById("name").value,
         address: document.getElementById("address").value,
+        gmail:document.getElementById("gmail").value,
         state: document.getElementById("state").value,
         district: document.getElementById("district").value,
         city: document.getElementById("city").value,
@@ -121,6 +122,7 @@
     <form action="/post" method="POST" id="ewaste-form">
       <input type="text" id="name" name="name" placeholder="Name" required>
       <input type="text" id="address" name="address" placeholder="Address" required>
+      <input type="email" id="gmail" name="gmail" placeholder="Gmail" required>
       <select id="state" name="state" required>
         <option value="" disabled selected>Choose State</option>
         <option value="Tamil Nadu">Tamil Nadu</option>

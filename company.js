@@ -26,8 +26,10 @@ const upload = multer({ storage: storage });
 //individual user
 
 const userSchema=new mongoose.Schema({
+    
     name:String,
     address:String,
+    gmail:String,
     state:String,
     district:String,
     city:String,
@@ -42,9 +44,9 @@ const users=mongoose.model("data",userSchema)
 
 router.post('/post',async (req,res)=>{
   try{
-    const {name,address,state,district,city,ewasteType,quantity,mobile}= req.body
+    const {name,address,gmail,state,district,city,ewasteType,quantity,mobile}= req.body
     const user=new users({
-      name,address,state,district,city,ewasteType,quantity,mobile
+      name,address,gmail,state,district,city,ewasteType,quantity,mobile
     })
     await user.save()
     console.log(user)
@@ -204,13 +206,13 @@ router.post("/storeEmail", async (req, res) => {
     const { email } = req.body;
     console.log(req.body)
     if (!email) {
-      console.log("❌ Email is missing");
+      console.log("Email is missing");
       return res.status(400).json({ message: "Email is required" });
     }
     // Check if email already exists
     const existingEmail = await Email.findOne({ email });
     if (existingEmail) {
-      return res.json({ redirectUrl: "/demoo_next", message: "Email already exists" });
+      return res.json({ redirectUrl: `/demoo_next?email=${email}`, message: "Email already exists" });
     }
 
     const newEmail = new Email({ email });
