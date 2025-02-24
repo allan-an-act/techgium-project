@@ -100,6 +100,14 @@ app.get('/demoo_next', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'demoo_next.html'));
 });
 
+app.get('/wait', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'wait.html'));
+});
+
+app.get('/order', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'order.html'));
+});
+
 // Middleware
 app.use(express.static("public")); 
 app.use(express.urlencoded({ extended: true }));
@@ -163,7 +171,7 @@ app.post("/vlogin", async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
-        res.json({ success: true, message: "Login successful", redirect: "/admin_dashboard" });
+        res.json({ success: true, message: "Login successful", redirect: "/order" });
 
     } catch (error) {
         console.error("Login Error:", error);
@@ -171,6 +179,58 @@ app.post("/vlogin", async (req, res) => {
     }
 });
 
+app.get("/getUser", async (req, res) => {
+    const gmail = req.query.email;
+    console.log(gmail);
+    if (!gmail) {
+        console.log("Error: Email is required");
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        console.log("Fetching user with email:", gmail);
+        const user = await users.findOne({ gmail });
+
+        if (!user) {
+            console.log("User not found:", gmail);
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const responseData = {
+            name: user.name,
+            address: user.address,
+            city: user.city,
+            state: user.state,
+            ewaste: [{ type: user.ewasteType, quantity: user.quantity }], // Wrap in an array
+            // pendingRequests: user.pendingRequests || [],
+        }
+        console.log("✅ User found:", user);
+        res.json(responseData);
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.get("/orders", async (req, res) => {
+    try {
+        const orders = await users.find();
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching orders" });
+    }
+});
+
+app.post("/confirm-order/:id", async (req, res) => {
+    try {
+        const order = await Order.findByIdAndUpdate(req.params.id, { status: "Confirmed" }, { new: true });
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: "Error confirming order" });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+

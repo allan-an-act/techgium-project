@@ -83,13 +83,25 @@
 
         <h3>Your E-Waste Submissions</h3>
         <div id="ewasteList">
-            <!-- E-Waste Items will be loaded here -->
         </div>
-
+        <h3>Pending Requests</h3>
+            <div id="pendingRequests">
+                <p>No pending requests.</p>
+        </div>
         <h3>Add More E-Waste</h3>
         <form class="add-form" id="addEwasteForm">
-            <input type="text" id="ewasteType" placeholder="E-Waste Type" required>
-            <input type="number" id="quantity" placeholder="Quantity (kg)" required>
+            <select id="ewaste-type" name="ewasteType" required>
+                <option value="" disabled selected>Choose E-Waste Type</option>
+                <option value="Motherboards">Motherboards</option>
+                <option value="Processors">Processors</option>
+                <option value="Hard Drives">Hard Drives</option>
+                <option value="Batteries">Batteries</option>
+                <option value="Cables and Wires">Cables and Wires</option>
+                <option value="other">Other</option>
+                <option value="Monitors">Monitors</option>
+              </select>
+
+              <input type="number" id="quantity" name="quantity" placeholder="Total Quantity (in kg)"  min="0" max="1000" required>
             <button type="submit" class="btn">Add E-Waste</button>
         </form>
     </div>
@@ -102,8 +114,91 @@
                 var storedEmail = email;
                 console.log("Stored Email:", storedEmail);
                 document.getElementById("userEmail").innerText = storedEmail;
+                async function fetchUserData() {
+                    try {
+                const response = await fetch(`http://localhost:3000/getUser?email=${email}`);
+                const userData = await response.json();
+
+                if (response.ok) {
+                    document.getElementById("userName").innerText = userData.name || "N/A";
+                    document.getElementById("userAddress").innerText = userData.address || "N/A";
+                    document.getElementById("userCity").innerText = userData.city || "N/A";
+                    document.getElementById("userState").innerText = userData.state || "N/A";
+
+                    // Display user's e-waste submissions
+                    const ewasteList = document.getElementById("ewasteList");
+                    ewasteList.innerHTML = "";
+
+                    if (Array.isArray(userData.ewaste) && userData.ewaste.length > 0) {
+                        userData.ewaste.forEach(item => {
+                            const div = document.createElement("div");
+                            div.className = "ewaste-item";
+                            div.innerHTML = `<span>${item.type}</span><span>${item.quantity} kg</span>`;
+                            ewasteList.appendChild(div);
+                        });
+                    }else {
+                    ewasteList.innerHTML = "<p>No e-waste submissions found.</p>";
+                    }
+            } else {
+                alert(userData.error || "User not found");
             }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                alert("Failed to fetch user details");
+            }
+            }
+        fetchUserData(); 
+        }
         });
+
+    document.getElementById("addEwasteForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const ewasteType = document.getElementById("ewaste-type").value;
+    const quantity = document.getElementById("quantity").value;
+
+    if (!ewasteType || !quantity) {
+        alert("Please enter all details");
+        return;
+    }
+
+    const newRequest = { type: ewasteType, quantity: quantity, status: "Pending" };
+
+    try {
+        const response = await fetch("http://localhost:3000/addEwaste", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: storedEmail, ewaste: newRequest }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("E-Waste request added successfully!");
+            updatePendingRequests(newRequest); // Update pending list dynamically
+        } else {
+            alert(result.error || "Failed to add request");
+        }
+    } catch (error) {
+        console.error("Error submitting request:", error);
+        alert("Failed to submit request");
+    }
+});
+
+function updatePendingRequests(request) {
+    const pendingList = document.getElementById("pendingRequests");
+
+    if (pendingList.innerHTML.includes("No pending requests.")) {
+        pendingList.innerHTML = "";
+    }
+
+    const div = document.createElement("div");
+    div.className = "ewaste-item";
+    div.innerHTML = `<span>${request.type}</span><span>${request.quantity} kg</span><span>${request.status}</span>`;
+    pendingList.appendChild(div);
+}
+
+
 
     </script>
 

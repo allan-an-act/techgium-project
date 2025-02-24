@@ -36,7 +36,7 @@ const userSchema=new mongoose.Schema({
     ewasteType: String,  // Renamed to avoid hyphen issues
     quantity: Number,    // Use Number instead of Integer
     mobile: Number 
-
+  
 
 })
 
@@ -50,7 +50,7 @@ router.post('/post',async (req,res)=>{
     })
     await user.save()
     console.log(user)
-    res.send("form submission successful")
+    res.redirect("/wait");
   }catch(error){
     res.status(500).send("Error saving data");
   }
