@@ -35,9 +35,9 @@ const userSchema=new mongoose.Schema({
     city:String,
     ewasteType: String,  // Renamed to avoid hyphen issues
     quantity: Number,    // Use Number instead of Integer
-    mobile: Number 
+    mobile: Number,
+    status: { type: String, default: "Pending" }
   
-
 })
 
 const users=mongoose.model("data",userSchema)
@@ -50,7 +50,9 @@ router.post('/post',async (req,res)=>{
     })
     await user.save()
     console.log(user)
-    res.redirect("/wait");
+    await user.save();
+    // return res.json({ redirectUrl: `/demoo_next?email=${email}`, message: "Email already exists" });
+    res.redirect(`/demoo_next?email=${gmail}`);
   }catch(error){
     res.status(500).send("Error saving data");
   }

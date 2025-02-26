@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Location & Route Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0 auto;
+      max-width: 800px;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1, h2 { text-align: center; color: #333; }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input[type="text"], input[type="number"], input[type="email"] {
+      width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    input[readonly] { background: #f0f0f0; cursor: not-allowed; }
+    input[type="checkbox"] { margin-right: 5px; }
+    button {
+      padding: 10px 20px; background: #007BFF; color: #fff;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    .results {
+      background: #fff; padding: 20px; border-radius: 8px;
+      box-shadow: 0 0 10px #ccc; display: none; text-align: center;
+    }
+    a { color: #007BFF; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .signal-indicator {
+      width: 50px; height: 50px; border-radius: 50%;
+      margin: 20px auto; border: 2px solid #000;
+    }
+    .signal-green { background-color: green; }
+    .signal-red { background-color: red; }
+    .signal-yellow { background-color: yellow; }
+  </style>
+</head>
+<body>
+  <h1>Location & Route Generator</h1>
+
+  <form id="locationForm">
+    <input type="hidden" id="phone" value="6379780241" />
+    <div class="form-group">
+      <label for="currentLocation">Current Location</label>
+      <input type="text" id="currentLocation" placeholder="Enter current address or coordinates" required />
+    </div>
+    <div class="form-group">
+      <label for="destination">Destination</label>
+      <input type="text" id="destination" readonly />
+    </div>
+    <div class="form-group">
+      <input type="checkbox" id="isMoving">
+      <label for="isMoving" style="display:inline;">Phone is moving</label>
+    </div>
+    <button type="submit">Generate Map Links & Check Status</button>
+  </form>
+
+  <div id="results" class="results">
+    <h2>Generated Links</h2>
+    <p><strong>Route Map:</strong> <a href="#" id="routeLink" target="_blank">View Route</a></p>
+    <p><strong>Tracking Map:</strong> <a href="#" id="trackingLink" target="_blank">View Tracking</a></p>
+    <div id="signalIndicator" class="signal-indicator"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="email">OTP Confirmation</label>
+    <input type="email" id="email" placeholder="Enter your email" required readonly>
+    <button id="sendOtpBtn">Send OTP</button>
+  </div>
+
+  <div class="form-group" id="otpSection" style="display: none;">
+    <label for="otp">Enter OTP:</label>
+    <input type="text" id="otp" placeholder="Enter OTP">
+    <button id="verifyOtpBtn">Verify OTP</button>
+  </div>
+  <div id="message"></div>
+
+  <!-- <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const destination = urlParams.get("address");
+      const email = urlParams.get("gmail"); 
+  
+      console.log("Extracted Email from URL:", email); // Debugging log
+  
+      if (destination) {
+        document.getElementById("destination").value = decodeURIComponent(destination);
+      }
+  
+      if (email) {
+        const emailField = document.getElementById("email");
+        emailField.value = decodeURIComponent(email);
+        emailField.dispatchEvent(new Event("input", { bubbles: true })); // Ensure it updates properly
+      }
+  
+      document.getElementById("locationForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const currentLocation = document.getElementById("currentLocation").value;
+        const destination = document.getElementById("destination").value;
+        const isMoving = document.getElementById("isMoving").checked;
+  
+        const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(currentLocation)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+        const trackingUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentLocation)}`;
+  
+        document.getElementById("routeLink").href = routeUrl;
+        document.getElementById("trackingLink").href = trackingUrl;
+  
+        const signalIndicator = document.getElementById("signalIndicator");
+        signalIndicator.classList.remove("signal-green", "signal-red", "signal-yellow");
+  
+        if (isMoving) {
+          signalIndicator.classList.add("signal-yellow");
+        } else if (currentLocation.trim().toLowerCase() === destination.trim().toLowerCase()) {
+          signalIndicator.classList.add("signal-green");
+        } else {
+          signalIndicator.classList.add("signal-red");
+        }
+  
+        document.getElementById("results").style.display = "block";
+      });
+  
+      function check() {
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const emailInput = document.getElementById('email');
+        const otpInput = document.getElementById('otp');
+        const otpSection = document.getElementById('otpSection');
+        const messageDiv = document.getElementById('message');
+  
+        let generatedOtp = null;
+  
+        const sendOtp = async (email) => {
+          try {
+            const response = await fetch('http://localhost:3000/sendOtp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+  
+            if (!response.ok) throw new Error('Failed to send OTP');
+  
+            const data = await response.json();
+            generatedOtp = data.otp;
+            messageDiv.textContent = 'OTP has been sent to your email.';
+            messageDiv.style.color = 'green';
+            otpSection.style.display = 'block';
+          } catch (error) {
+            messageDiv.textContent = 'Error sending OTP. Please try again.';
+            messageDiv.style.color = 'red';
+          }
+        };
+  
+        const verifyOtp = (enteredOtp) => {
+          if (enteredOtp === generatedOtp) {
+            messageDiv.textContent = 'Email verified successfully!';
+            messageDiv.style.color = 'green';
+          } else {
+            messageDiv.textContent = 'Invalid OTP. Please try again.';
+            messageDiv.style.color = 'red';
+          }
+        };
+  
+        sendOtpBtn.addEventListener('click', () => {
+          const email = emailInput.value.trim();
+          if (email) sendOtp(email);
+          else {
+            messageDiv.textContent = 'Please enter a valid email address.';
+            messageDiv.style.color = 'red';
+          }
+        });
+  
+        verifyOtpBtn.addEventListener('click', () => {
+          const enteredOtp = otpInput.value.trim();
+          verifyOtp(enteredOtp);
+        });
+      }
+  
+      check(); // Initialize OTP event listeners
+    });
+  </script> -->
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const destination = urlParams.get("address");
+    const email = urlParams.get("gmail");
+    const orderId = urlParams.get("orderId"); // Get order ID from URL
+  
+    console.log("Extracted Email:", email);
+    console.log("Extracted Order ID:", orderId);
+  
+    if (destination) {
+      document.getElementById("destination").value = decodeURIComponent(destination);
+    }
+  
+    if (email) {
+      const emailField = document.getElementById("email");
+      emailField.value = decodeURIComponent(email);
+      emailField.setAttribute("readonly", true);
+      emailField.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  
+    document.getElementById("locationForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const currentLocation = document.getElementById("currentLocation").value;
+      const destination = document.getElementById("destination").value;
+      const isMoving = document.getElementById("isMoving").checked;
+  
+      const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(currentLocation)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+      const trackingUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentLocation)}`;
+  
+      document.getElementById("routeLink").href = routeUrl;
+      document.getElementById("trackingLink").href = trackingUrl;
+  
+      const signalIndicator = document.getElementById("signalIndicator");
+      signalIndicator.classList.remove("signal-green", "signal-red", "signal-yellow");
+  
+      if (isMoving) {
+        signalIndicator.classList.add("signal-yellow");
+      } else if (currentLocation.trim().toLowerCase() === destination.trim().toLowerCase()) {
+        signalIndicator.classList.add("signal-green");
+      } else {
+        signalIndicator.classList.add("signal-red");
+      }
+  
+      document.getElementById("results").style.display = "block";
+    });
+  
+    function check() {
+      const sendOtpBtn = document.getElementById("sendOtpBtn");
+      const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+      const emailInput = document.getElementById("email");
+      const otpInput = document.getElementById("otp");
+      const otpSection = document.getElementById("otpSection");
+      const messageDiv = document.getElementById("message");
+  
+      let generatedOtp = null;
+  
+      const sendOtp = async (email) => {
+        try {
+          const response = await fetch("http://localhost:3000/sendOtp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+  
+          if (!response.ok) throw new Error("Failed to send OTP");
+  
+          const data = await response.json();
+          generatedOtp = data.otp;
+          messageDiv.textContent = "OTP has been sent to your email.";
+          messageDiv.style.color = "green";
+          otpSection.style.display = "block";
+        } catch (error) {
+          messageDiv.textContent = "Error sending OTP. Please try again.";
+          messageDiv.style.color = "red";
+        }
+      };
+  
+      const verifyOtp = async (enteredOtp) => {
+        if (enteredOtp === generatedOtp) {
+          messageDiv.textContent = "Updating order status...";
+          messageDiv.style.color = "blue";
+  
+          if (orderId) {
+            try {
+              const response = await fetch("http://localhost:3000/updateOrder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, status: "Confirmed" }),
+              });
+  
+              if (!response.ok) throw new Error("Failed to update order status");
+  
+              messageDiv.textContent = "Order confirmed successfully!";
+              messageDiv.style.color = "green";
+              window.location.href = "/order"; 
+            } catch (error) {
+              messageDiv.textContent = "Error updating order. Please try again.";
+              messageDiv.style.color = "red";
+            }
+          } else {
+            messageDiv.textContent = "Order ID missing in URL. Cannot update status.";
+            messageDiv.style.color = "red";
+          }
+        } else {
+          messageDiv.textContent = "Invalid OTP. Please try again.";
+          messageDiv.style.color = "red";
+        }
+      };
+  
+      sendOtpBtn.addEventListener("click", () => {
+        const email = emailInput.value.trim();
+        if (email) sendOtp(email);
+        else {
+          messageDiv.textContent = "Please enter a valid email address.";
+          messageDiv.style.color = "red";
+        }
+      });
+  
+      verifyOtpBtn.addEventListener("click", () => {
+        const enteredOtp = otpInput.value.trim();
+        verifyOtp(enteredOtp);
+      });
+    }
+  
+    check(); // Initialize OTP event listeners
+  });
+</script>
+  
+</body>
+</html>

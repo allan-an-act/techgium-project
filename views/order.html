@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,67 +7,91 @@
     <title>Order Management</title>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    text-align: center;
-    padding: 20px;
-}
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
 
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
 
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    background: #28a745;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-}
+        .user-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
 
-button:hover {
-    background: #218838;
-}
+        .user-icon img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
+        .confirm-btn {
+            background: #ffc107;
+            color: black;
+        }
 
-th {
-    background: #007bff;
-    color: white;
-}
+        .confirm-btn:hover {
+            background: #e0a800;
+        }
 
-.confirm-btn {
-    background: #ffc107;
-    color: black;
-}
-.confirm-btn:hover {
-    background: #e0a800;
-}
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+        }
 
+        .reject-btn:hover {
+            background: #c82333;
+        }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
+
+    <div class="user-icon">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User Icon">
+        <span id="userEmail">Loading...</span>
+    </div>
+
     <div class="container">
         <h1>Order Management</h1>
         <button id="fetchOrders">Fetch Orders</button>
+        
+        <h2>Incoming Requests (Pending)</h2>
         <table>
             <thead>
                 <tr>
@@ -74,53 +99,171 @@ th {
                     <th>Quantity</th>
                     <th>Address</th>
                     <th>Phone Number</th>
-                    <th>Status</th>
+                    <th>Email</th>
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody id="orderTable"></tbody>
+            <tbody id="pendingOrders"></tbody>
         </table>
+
+        <h2>Pickup Scheduled</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Address</th>
+                    <th>Phone Number</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="pickupOrders"></tbody>
+        </table>
+
+        <h2>Confirmed Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Address</th>
+                    <th>Phone Number</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="confirmedOrders"></tbody>
+        </table>
+
+        <h2>Rejected Orders</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Address</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="rejectedOrders"></tbody>
+</table>
     </div>
+    
     <script>
-        
-document.getElementById("fetchOrders").addEventListener("click", fetchOrders);
-
-async function fetchOrders() {
-    try {
-        const response = await fetch("http://localhost:3000/orders");
-        const orders = await response.json();
-        const orderTable = document.getElementById("orderTable");
-        orderTable.innerHTML = "";
-
-        orders.forEach(order => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${order.name}</td>
-                <td>${order.quantity}</td>
-                <td>${order.status}</td>
-                <td>${order.address}</td>
-                <td>${order.mobile}</td>
-                <td>
-                    <button class="confirm-btn" onclick="confirmOrder('${order._id}')">Confirm Order</button>
-                </td>
-            `;
-            orderTable.appendChild(row);
+        document.addEventListener("DOMContentLoaded", function() {
+            const vendorEmail = localStorage.getItem("vendorEmail");
+            if (vendorEmail) {
+                document.getElementById("userEmail").textContent = vendorEmail;
+            } else {
+                document.getElementById("userEmail").textContent = "Not Logged In";
+            }
         });
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-    }
+
+        document.getElementById("fetchOrders").addEventListener("click", fetchOrders);
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch("http://localhost:3000/orders");
+                const orders = await response.json();
+
+                // Select table body elements
+                const pendingTable = document.getElementById("pendingOrders");
+                const pickupTable = document.getElementById("pickupOrders");
+                const confirmedTable = document.getElementById("confirmedOrders");
+                const rejectedTable = document.getElementById("rejectedOrders");
+                // Clear existing tables
+                pendingTable.innerHTML = "";
+                pickupTable.innerHTML = "";
+                confirmedTable.innerHTML = "";
+                rejectedTable.innerHTML = "";
+
+                orders.forEach(order => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${order.name}</td>
+                        <td>${order.quantity}</td>
+                        <td>${order.address}</td>
+                        <td>${order.mobile}</td>
+                        <td>${order.gmail}</td>
+                    `;
+
+                    if (order.status === "Pending") {
+                        const pendingRow = row.cloneNode(true);
+                        pendingRow.innerHTML += `
+                            <td>
+                                <button class="confirm-btn" onclick="redirectToConfirmation('${order._id}', '${order.gmail}')">
+                                    Schedule Pickup
+                                </button>
+                                <button class="reject-btn" onclick="rejectOrder('${order._id}')">
+                                    Reject
+                                </button>
+                            </td>
+                        `;
+                        pendingTable.appendChild(pendingRow);
+                    } 
+                    else if (order.status === "Pickup") {
+                        const pickupRow = row.cloneNode(true);
+                        pickupRow.innerHTML += `
+                            <td>
+                                <button class="confirm-btn" onclick="redirectToMap('${order._id}','${order.address}','${order.gmail}')">
+                                    Track Order
+                                </button>
+                            </td>
+                        `;
+                        pickupTable.appendChild(pickupRow);
+                    } 
+                    else if (order.status === "Confirmed") {
+                        const confirmedRow = row.cloneNode(true);
+                        confirmedRow.innerHTML += `<td>${order.status}</td>`;
+                        confirmedTable.appendChild(confirmedRow);
+                    }
+                    else if (order.status === "Rejected") {
+                    const rejectedRow = row.cloneNode(true);
+                    rejectedRow.innerHTML += `<td>${order.status}</td>`;
+                    rejectedTable.appendChild(rejectedRow);
+                }
+                });
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        }
+        function redirectToMap(orderId, address, gmail) {
+    const encodedAddress = encodeURIComponent(address);
+    const encodedGmail = encodeURIComponent(gmail);
+    window.location.href = `/map?orderId=${orderId}&address=${encodedAddress}&gmail=${encodedGmail}`;
 }
 
-async function confirmOrder(orderId) {
+        function redirectToConfirmation(orderId, gmail) {
+            const encodedEmail = encodeURIComponent(gmail);
+            window.location.href = `/order_conf?email=${encodedEmail}`;
+        }
+
+        async function rejectOrder(orderId) {
+    if (!confirm("Are you sure you want to reject this order?")) return;
+
     try {
-        const response = await fetch(`http://localhost:3000/confirm-order/${orderId}`, { method: "POST" });
+        const response = await fetch(`http://localhost:3000/reject/${orderId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: "Rejected" })
+        });
+
         if (response.ok) {
-            fetchOrders(); // Refresh table after confirmation
+            alert("Order rejected successfully");
+            fetchOrders(); // Refresh the orders list
+        } else {
+            alert("Failed to reject the order");
         }
     } catch (error) {
-        console.error("Error confirming order:", error);
+        console.error("Error rejecting order:", error);
     }
 }
     </script>
+
 </body>
 </html>

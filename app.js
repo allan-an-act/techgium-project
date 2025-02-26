@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
-
+const { submitVendor, confirmOrder } = require('./submit');
 const {sendOtp}=require("./otp");
 const {db, users, BulkUser, Company,Vendor,Email,router}=require("./company");
 const app = express();
@@ -107,6 +107,13 @@ app.get('/wait', (req, res) => {
 app.get('/order', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'order.html'));
 });
+app.get('/order_conf', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'order_conf.html'));
+});
+
+app.get('/map', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'map.html'));
+});
 
 // Middleware
 app.use(express.static("public")); 
@@ -171,7 +178,7 @@ app.post("/vlogin", async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
-        res.json({ success: true, message: "Login successful", redirect: "/order" });
+        res.json({ success: true, message: "Login successful",email:vendor.email,redirect: "/order" });
 
     } catch (error) {
         console.error("Login Error:", error);
@@ -223,12 +230,77 @@ app.get("/orders", async (req, res) => {
 
 app.post("/confirm-order/:id", async (req, res) => {
     try {
-        const order = await Order.findByIdAndUpdate(req.params.id, { status: "Confirmed" }, { new: true });
+        const order = await users.findByIdAndUpdate(req.params.id, { status: "Confirmed" }, { new: true });
+        
         res.json(order);
     } catch (error) {
         res.status(500).json({ message: "Error confirming order" });
     }
 });
+
+router.get("/get_bulk_details", async (req, res) => {
+    try {
+      const bulkUsers = await BulkUser.find(); // Fetch all bulk users from MongoDB
+      res.json(bulkUsers);
+    } catch (error) {
+      console.error("Error fetching bulk users:", error);
+      res.status(500).json({ message: "Error fetching bulk user details", error: error.message });
+    }
+  });
+  app.put("/reject/:orderId", async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const updatedOrder = await users.findOneAndUpdate(
+            { _id: orderId }, // Find order by its unique ID
+            { status: "Rejected" }, // Set status to "Rejected"
+            { new: true } // Return updated order
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        res.json({ message: "Order rejected successfully", order: updatedOrder });
+    } catch (error) {
+        console.error("Error rejecting order:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.post("/updateOrder", async (req, res) => {
+    try {
+      const { orderId, address, gmail } = req.body;
+  
+      if (!orderId) {
+        return res.status(400).json({ message: "Order ID is required" });
+      }
+  
+      // Find and update the order
+      const order = await users.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+  
+      // Update only provided fields
+      if (address) order.address = address;
+      if (gmail) order.gmail = gmail;
+  
+      // Set status to "Confirmed"
+      order.status = "Confirmed";
+  
+      await order.save(); // Save updated data
+      
+      res.json({ success: true, message: "Order confirmed", order });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error updating order", error: error.message });
+    }
+  });
+  
+  
+
+app.post('/submit_vendor', submitVendor);
+app.post('/confirm_order', confirmOrder);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
