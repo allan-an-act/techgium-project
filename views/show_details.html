@@ -1,195 +1,49 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Show Details</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 1em;
-            color: white;
-            background-color: #007BFF;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        .details {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f4f4f9;
-            border-radius: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th, table td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ccc;
-        }
-
-        table th {
-            background-color: #007BFF;
-            color: white;
-        }
-    </style>
-    <script>
-        async function fetchDetails(userType) {
-            const response = await fetch(`/get_${userType}_details`);
-            const data = await response.json();
-
-            const detailsDiv = document.getElementById('details');
-            detailsDiv.innerHTML = '';
-
-            if (data.length === 0) {
-                detailsDiv.innerHTML = `<p>No ${userType === 'individual' ? 'individual user' : 'bulk user'} records found.</p>`;
-                return;
-            }
-
-            const table = document.createElement('table');
-            const headers = userType === 'individual' ? 
-                ['Name', 'Address', 'Phone Number', 'E-Waste Type', 'District', 'State', 'City/Town', 'Quantity'] :
-                ['Company Name', 'Company Address', 'Name', 'Phone Number', 'E-Waste Type', 'District', 'State', 'City/Town', 'Quantity'];
-
-            const headerRow = document.createElement('tr');
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.textContent = header;
-                headerRow.appendChild(th);
-            });
-            table.appendChild(headerRow);
-
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                headers.forEach(header => {
-                    const key = header.replace(/\s+/g, '_').toLowerCase();
-                    const td = document.createElement('td');
-                    td.textContent = item[key];
-                    row.appendChild(td);
-                });
-                table.appendChild(row);
-            });
-
-            detailsDiv.appendChild(table);
-        }
-    </script>
-</head>
-<body>
-    <header>
-        <h1>Show Details</h1>
-    </header>
-
-    <div class="container">
-        <h2>Choose User Type</h2>
-        <button class="btn" onclick="fetchDetails('individual')">Individual User</button>
-        <button class="btn" onclick="fetchDetails('bulk')">Bulk User</button>
-
-        <div id="details" class="details"></div>
-    </div>
-</body>
-</html> -->
-
-
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bulk User Details</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            margin: 20px;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        button { padding: 10px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background-color: #0056b3; }
+        input { padding: 5px; width: 100px; }
+        .report-btn { position: absolute; bottom: 20px; left: 20px; background-color: #f39c12; padding: 10px 15px; text-decoration: none; font-size: 14px; border-radius: 5px; color: white; }
+        .report-btn:hover { background-color: #e67e22; }
     </style>
 </head>
 <body>
-
     <h2>Bulk User Details</h2>
     <button onclick="fetchBulkUsers()">Show Bulk Users</button>
     <div id="details"></div>
-
+    <h2>Confirmed Orders</h2>
+    <div id="confirmedOrders"></div>
+    <a href="report.html" class="report-btn">Generate Report</a>
+    
     <script>
+        function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
         async function fetchBulkUsers() {
             try {
                 const response = await fetch("/get_bulk_details");
                 const data = await response.json();
-
                 const detailsDiv = document.getElementById("details");
-                detailsDiv.innerHTML = ""; // Clear previous content
-
+                detailsDiv.innerHTML = "";
+                
                 if (data.length === 0) {
                     detailsDiv.innerHTML = "<p>No bulk user records found.</p>";
                     return;
                 }
-
+                
                 const table = document.createElement("table");
-
-                // Table Headers
-                const headers = ["Company Name", "Company Address", "Name", "Address", "State", "District", "City", "E-Waste Type", "Quantity", "Mobile"];
+                const headers = ["Company Name", "E-Waste Type", "Quantity", "Mobile", "Amount", "Action"];
+                
                 const headerRow = document.createElement("tr");
                 headers.forEach(header => {
                     const th = document.createElement("th");
@@ -197,26 +51,163 @@
                     headerRow.appendChild(th);
                 });
                 table.appendChild(headerRow);
-
-                // Table Data
-                data.forEach(user => {
+                
+                for (const user of data) {
                     const row = document.createElement("tr");
-                    headers.forEach(header => {
-                        const key = header.toLowerCase().replace(/\s+/g, '_'); // Convert header text to object key
+                    row.setAttribute("id", `row-${user._id}`);
+                    
+                    ["companyName", "ewasteType", "quantity", "mobile"].forEach(key => {
                         const td = document.createElement("td");
-                        td.textContent = user[key] || "N/A"; // Handle missing data
+                        td.textContent = user[key] || "N/A";
+                        row.appendChild(td);
+                    });
+                    
+                    const amountTd = document.createElement("td");
+                    const actionTd = document.createElement("td");
+                    
+                    // Check if the bulk user is in the amounts collection
+                    const amountResponse = await fetch(`/get_amount/${user._id}`);
+                    const amountData = await amountResponse.json();
+                    
+                    if (amountData && amountData.amount) {
+                        amountTd.textContent = amountData.amount;
+                        
+                        if (amountData.status === "pending") {
+                            const confirmBtn = document.createElement("button");
+                            confirmBtn.textContent = "Confirm Order";
+                            confirmBtn.onclick = () => confirmOrder(user._id);
+                            actionTd.appendChild(confirmBtn);
+                        } else {
+                            actionTd.innerHTML = "<span style='color: green;'>Amount Sent</span>";
+                        }
+                    } else {
+                        const amountInput = document.createElement("input");
+                        amountInput.type = "number";
+                        amountInput.placeholder = "Enter amount";
+                        amountInput.id = `amount-${user._id}`;
+                        amountTd.appendChild(amountInput);
+                        
+                        const confirmBtn = document.createElement("button");
+                        confirmBtn.textContent = "Confirm Order";
+                        confirmBtn.onclick = () => confirmOrder(user._id);
+                        actionTd.appendChild(confirmBtn);
+                    }
+                    
+                    row.appendChild(amountTd);
+                    row.appendChild(actionTd);
+                    table.appendChild(row);
+                }
+                
+                detailsDiv.appendChild(table);
+                
+                fetchConfirmedOrders();
+            } catch (error) {
+                console.error("Error fetching bulk users:", error);
+            }
+        }
+        
+        async function confirmOrder(bulkUserId) {
+            const amountInput = document.getElementById(`amount-${bulkUserId}`).value;
+            const enteredBy = "admin";
+            
+            if (!amountInput) {
+                alert("Please enter an amount before confirming.");
+                return;
+            }
+            
+            try {
+                const response = await fetch("/confirm_order_com", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ bulkUserId, amount: amountInput, enteredBy })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert("Order confirmed successfully!");
+                    fetchBulkUsers();
+                } else {
+                    alert("Error confirming order.");
+                }
+            } catch (error) {
+                console.error("Error confirming order:", error);
+            }
+        }
+
+//         async function confirmOrder(bulkUserId) {
+//     const amountInput = document.getElementById(`amount-${bulkUserId}`).value;
+//     const enteredBy = getQueryParam("email"); // Fetch stored Gmail
+
+//     if (!amountInput) {
+//         alert("Please enter an amount before confirming.");
+//         return;
+//     }
+    
+//     if (!enteredBy) {
+//         alert("User Gmail not found. Please log in.");
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch("/confirm_order_com", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ bulkUserId, amount: amountInput, enteredBy }) // Send Gmail
+//         });
+
+//         const result = await response.json();
+
+//         if (result.success) {
+//             alert("Order confirmed successfully!");
+//             fetchBulkUsers();
+//         } else {
+//             alert("Error confirming order.");
+//         }
+//     } catch (error) {
+//         console.error("Error confirming order:", error);
+//     }
+// }
+
+        
+        async function fetchConfirmedOrders() {
+            try {
+                const response = await fetch("/get_confirmed_orders");
+                const data = await response.json();
+                const confirmedOrdersDiv = document.getElementById("confirmedOrders");
+                confirmedOrdersDiv.innerHTML = "";
+                
+                if (data.length === 0) {
+                    confirmedOrdersDiv.innerHTML = "<p>No confirmed orders yet.</p>";
+                    return;
+                }
+                
+                const table = document.createElement("table");
+                const headers = ["Company Name", "E-Waste Type", "Quantity", "Mobile", "Amount"];
+                
+                const headerRow = document.createElement("tr");
+                headers.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+                
+                data.forEach(order => {
+                    const row = document.createElement("tr");
+                    ["companyName", "ewasteType", "quantity", "mobile", "amount"].forEach(key => {
+                        const td = document.createElement("td");
+                        td.textContent = order[key] || "N/A";
                         row.appendChild(td);
                     });
                     table.appendChild(row);
                 });
-
-                detailsDiv.appendChild(table);
+                
+                confirmedOrdersDiv.appendChild(table);
             } catch (error) {
-                console.error("Error fetching bulk user data:", error);
-                document.getElementById("details").innerHTML = "<p>Error loading bulk users.</p>";
+                console.error("Error fetching confirmed orders:", error);
             }
         }
     </script>
-
 </body>
-</html>
+</html> 

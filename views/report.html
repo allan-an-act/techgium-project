@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>♻️ E-Waste Recycling Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --secondary-color: #e3f2fd;
+            --error-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .report-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .report-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .location-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        input, select {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+        }
+
+        .download-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .notification {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: var(--error-color);
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        @media (max-width: 480px) {
+            .report-container {
+                padding: 1.5rem;
+                margin: 10px;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <h2>♻️ E-Waste Recycling Report</h2>
+        <form class="report-form" id="reportForm">
+            <!-- Location Fields -->
+            <div class="location-group">
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <input type="text" id="city" placeholder="Enter city" required>
+                </div>
+                <div class="form-group">
+                    <label for="district">District:</label>
+                    <input type="text" id="district" placeholder="Enter district" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State:</label>
+                    <select id="state" required>
+                        <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <!-- Add other Indian states here -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Other Fields -->
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Time:</label>
+                <input type="time" id="time" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Waste Type:</label>
+                <input type="text" id="type" placeholder="e.g., Electronics, Batteries" required>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount Paid (₹):</label>
+                <input type="number" id="amount" min="0" step="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity (kg):</label>
+                <input type="number" id="quantity" min="0" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="material">Recovered Material:</label>
+                <input type="text" id="material" placeholder="e.g., Copper, Gold" required>
+            </div>
+
+            <div class="form-group">
+                <label for="recycled">Recycled Units:</label>
+                <input type="number" id="recycled" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="purity">Material Purity (%):</label>
+                <input type="number" id="purity" min="0" max="100" required>
+            </div>
+
+            <div class="form-group">
+                <label for="company">Recycling Company:</label>
+                <input type="text" id="company" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Company Address:</label>
+                <input type="text" id="address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contact">Contact Number:</label>
+                <input type="tel" id="contact" pattern="[0-9]{10}" required>
+            </div>
+
+            <div class="notification error-message" id="errorMessage"></div>
+            <button type="submit" class="download-btn">📥 Generate Report</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateForm()) {
+                generatePDF();
+            }
+        });
+
+        function validateForm() {
+            const inputs = document.querySelectorAll('#reportForm input, #reportForm select');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    showError(`Please fill in ${input.previousElementSibling.textContent}`);
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 3000);
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get form values
+            const formData = {
+                city: document.getElementById('city').value,
+                district: document.getElementById('district').value,
+                state: document.getElementById('state').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                type: document.getElementById('type').value,
+                amount: document.getElementById('amount').value,
+                quantity: document.getElementById('quantity').value,
+                material: document.getElementById('material').value,
+                recycled: document.getElementById('recycled').value,
+                purity: document.getElementById('purity').value,
+                company: document.getElementById('company').value,
+                address: document.getElementById('address').value,
+                contact: document.getElementById('contact').value
+            };
+        
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 2; // Margin for the border
+            
+            // Draw Border
+            doc.setDrawColor(0, 255, 0); // Set border color to black
+            doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin); // Draw border
+
+            // Add E-Waste Image as Background
+            const imgBackground = new Image();
+            imgBackground.src = "https://i.postimg.cc/Y2nbd3Rt/recycle.jpg"; // Direct link to your e-waste image
+            imgBackground.onload = function () {
+                // Add background image with reduced opacity
+                doc.addImage(imgBackground, 'JPEG', margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin, '', 'FAST', 0.1);
+
+            
+
+            
+            // Add Title
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
+            doc.text("E-Waste Recycling Report", pageWidth / 2, margin + 20, { align: "right" }); // Center-aligned title
+            
+            // Add Content
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            
+            let y = margin + 40; // Initial Y position for text (below the title)
+            const lineSpacing = 7; // Spacing between lines
+            
+            const content = [
+                `Report Date: ${formData.date}`,
+                `Time: ${formData.time}`,
+                `Location: ${formData.city}, ${formData.district}, ${formData.state}`,
+                `Type of Waste: ${formData.type}`,
+                `Amount Paid: ₹${formData.amount}`,
+                `Quantity: ${formData.quantity} kg`,
+                `Material Obtained: ${formData.material}`,
+                `Recycled Quantity: ${formData.recycled} units`,
+                `Purity: ${formData.purity}%`,
+                `Recycling Company: ${formData.company}`,
+                `Company Contact Address: ${formData.address}`,
+                `Contact Number: ${formData.contact}`,
+                ``,
+                `${formData.company} follows a structured Recycling Process:`,
+                `1. Collection through authorized scrap dealers`,
+                `2. Manual/machine dismantling of components`,
+                `3. Advanced refining of ${formData.material}`,
+                `4. Quality testing (${formData.purity}% purity)`,
+                `5. Eco-friendly disposal of non-recyclables.`
+            ];
+            
+            // Add your additional content here
+            const additionalContent = [
+                ``,
+                `${formData.company} Recyclers follows a structured process for ${formData.type} recycling.`,
+                `Collected e-waste moves through scrap dealers and aggregators before reaching the recycling facility.`,
+                `The ${formData.type} are dismantled manually or using machines to extract reusable components.`,
+                `The extracted ${formData.material}, with ${formData.purity}% purity`,
+                `is obtained through advanced refining techniques`,
+                `ensuring minimal contamination`,
+                `Non-recyclable parts are safely disposed of following environmental guidelines.`,
+                `Recycling reduces landfill waste, conserves natural resources, and minimizes pollution.`,
+                `The recovered metals are further processed and sold to authorized buyers`,
+                `supporting a circular economy.`
+            ];
+            
+            // Combine both content arrays
+            const fullContent = content.concat(additionalContent);
+            
+            // Add content to PDF
+            fullContent.forEach(line => {
+                if (y > pageHeight - margin) {
+                    doc.addPage(); // Add a new page if content exceeds the current page
+                    y = margin + 20; // Reset Y position for the new page
+                }
+                doc.text(line, margin + 10, y); // Add text with left padding
+                y += lineSpacing; // Move Y position down for the next line
+            });
+        
+                // Add Government Seal at Bottom
+                const imgSeal = new Image();
+                imgSeal.src = "https://i.postimg.cc/59KVdD1G/approved.jpg"; // Direct link to your government seal image
+                imgSeal.onload = function () {
+                    doc.addImage(imgSeal, 'JPEG', pageWidth / 2 - 15, pageHeight - 40, 30, 30);
+        
+                    // Save the PDF
+                    doc.save(`E-Waste_Report_${Date.now()}.pdf`);
+                    showSuccess();
+                };
+            };
+        }
+
+        function showSuccess() {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'notification success-message';
+            successDiv.textContent = 'Report generated successfully! ✅';
+            document.getElementById('reportForm').appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 2000);
+        }
+    </script>
+</body>
+</html>

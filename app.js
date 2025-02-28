@@ -8,9 +8,10 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const { submitVendor, confirmOrder } = require('./submit');
 const {sendOtp}=require("./otp");
-const {db, users, BulkUser, Company,Vendor,Email,router}=require("./company");
+const {db, users, BulkUser, Company,Vendor,Email,bulk_Email, AmountModel,storeAmountEntry,router}=require("./company");
 const app = express();
 const PORT = 3000;
+const { ObjectId } = require('mongodb');
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'home.html'));
@@ -115,6 +116,21 @@ app.get('/map', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'map.html'));
 });
 
+app.get('/bulk_next', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'bulk_next.html'));
+});
+
+app.get('/notice', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'notice.html'));
+});
+app.get('/track', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'track.html'));
+});
+
+app.get('/report', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'report.html'));
+});
+
 // Middleware
 app.use(express.static("public")); 
 app.use(express.urlencoded({ extended: true }));
@@ -122,11 +138,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(bodyParser.json());
 app.post("/sendOtp", sendOtp);
-
 // Serve HTML Pages
 app.use(express.static(path.join(__dirname, 'views')));
 app.use("/", router);
-//login page
+
+
 app.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -137,21 +153,23 @@ app.post("/login", async (req, res) => {
         if (!user) {
             return res.status(400).json({ success: false, message: "User not found" });
         }
+
         // Compare entered password with stored hashed password
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log(user.password,password);
+
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
-        // On successful login, send success response
-        res.json({ success: true, message: "Login successful", redirect: "/admin_dashboard" });
+        // On successful login, send success response with email
+        res.json({ success: true, email: user.email });
 
     } catch (error) {
         console.error("Login Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
 
 app.post("/vlogin", async (req, res) => {
     try {
@@ -197,7 +215,7 @@ app.get("/getUser", async (req, res) => {
     try {
         console.log("Fetching user with email:", gmail);
         const user = await users.findOne({ gmail });
-
+        console.log("User Document:", user);
         if (!user) {
             console.log("User not found:", gmail);
             return res.status(404).json({ error: "User not found" });
@@ -219,6 +237,76 @@ app.get("/getUser", async (req, res) => {
     }
 });
 
+
+app.get("/getBulkUser", async (req, res) => {
+    const gmail = req.query.email;
+    console.log(gmail);
+    if (!gmail) {
+        console.log("Error: Email is required");
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        console.log("Fetching user with email:", gmail);
+        const user = await BulkUser.findOne({ gmail });
+
+        if (!user) {
+            console.log("User not found:", gmail);
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const responseData = {
+            name: user.companyName,
+            address: user.companyAddress,
+            city: user.city,
+            state: user.state,
+            ewaste: [{ type: user.ewasteType, quantity: user.quantity }], // Wrap in an array
+            // pendingRequests: user.pendingRequests || [],
+        }
+        console.log("✅ User found:", user);
+        res.json(responseData);
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.get("/getBulk", async (req, res) => {
+    try {
+        const email = req.query.email;
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        // Find user data
+        const userData = await BulkUser.findOne({ email: email });
+
+        if (!userData) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Find pending requests related to the user's company
+        const companyRequests = await BulkUser.find({ email: email, status: "Pending" });
+
+        res.json({
+            companyName: userData.companyName,
+            companyAddress: userData.companyAddress,
+            name: userData.name,
+            city: userData.city,
+            state: userData.state,
+            district: userData.district,
+            mobile: userData.mobile,
+            gmail: userData.email,
+            pendingRequests: companyRequests, // Now properly defined
+        });
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 app.get("/orders", async (req, res) => {
     try {
         const orders = await users.find();
@@ -227,6 +315,7 @@ app.get("/orders", async (req, res) => {
         res.status(500).json({ message: "Error fetching orders" });
     }
 });
+
 
 app.post("/confirm-order/:id", async (req, res) => {
     try {
@@ -241,6 +330,7 @@ app.post("/confirm-order/:id", async (req, res) => {
 router.get("/get_bulk_details", async (req, res) => {
     try {
       const bulkUsers = await BulkUser.find(); // Fetch all bulk users from MongoDB
+      console.log("Bulk user data:", bulkUsers); 
       res.json(bulkUsers);
     } catch (error) {
       console.error("Error fetching bulk users:", error);
@@ -297,12 +387,131 @@ router.post("/updateOrder", async (req, res) => {
   });
   
   
+//BULK
+app.put('/confirm_order/:id', async (req, res) => {
+    try {
+        await BulkUser.findByIdAndUpdate(req.params.id, { status: "Confirmed" });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ✅ Fetch confirmed orders
+app.get('/get_confirmed_orders', async (req, res) => {
+    try {
+        const confirmedOrders = await BulkUser.find({ status: "Confirmed" });
+        res.json(confirmedOrders);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/get_amount/:id', async (req, res) => {
+    try {
+        const bulkUserId = req.params.id;
+        const amountEntry = await AmountModel.findOne({ bulkUserId });
+
+        if (!amountEntry) {
+            return res.status(404).json({ message: "Amount not found" });
+        }
+
+        res.json(amountEntry);
+    } catch (error) {
+        console.error("Error fetching amount:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+app.post("/confirm_order_com", async (req, res) => {
+    try {
+        console.log("🔹 Received order confirmation request:", req.body);
+
+        const { bulkUserId, amount, enteredBy } = req.body;
+        if (!bulkUserId || !amount || !enteredBy) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+
+        const result = await storeAmountEntry({ bulkUserId, amount, enteredBy });
+
+        console.log("✅ Order confirmed:", result);
+        res.json({ success: true, message: "Order confirmed and amount added successfully", data: result });
+    } catch (error) {
+        console.error("❌ Error in confirm_order:", error);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+});
+app.get("/getEwasteRequests", async (req, res) => {
+    const gmail = req.query.email;
+    if (!gmail) return res.status(400).json({ error: "Email is required" });
+
+    try {
+        console.log("Fetching from DB for:", gmail);
+        const requests = await users.find({ gmail });
+
+        console.log("DB Response:", requests); // Log data from DB
+        res.json(requests);
+    } catch (error) {
+        console.error("Database Error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+app.post("/addEwaste", async (req, res) => {
+    try {
+        console.log("Received request body:", req.body); // Log incoming data
+
+        const newRequest = new users(req.body);
+        await newRequest.save();
+
+        res.status(201).json({ message: "E-Waste request added successfully!" });
+    } catch (error) {
+        console.error("Error saving request:", error); // Log error to console
+        res.status(500).json({ message: "Error adding request", error: error.message });
+    }
+});
 
 app.post('/submit_vendor', submitVendor);
 app.post('/confirm_order', confirmOrder);
 
 
+app.get("/get_confirmed_orders", async (req, res) => {
+    try {
+        const confirmedOrders = await BulkUser.find({ status: "Confirmed" }); // Fetch only confirmed orders
+        res.json(confirmedOrders);
+    } catch (error) {
+        console.error("Error fetching confirmed orders:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+
+// Route to confirm an order
+app.post("/confirm_order_com", async (req, res) => {
+    try {
+        const { bulkUserId, amount, enteredBy } = req.body;
+
+        if (!bulkUserId || !amount) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+
+        const updatedOrder = await BulkUser.findByIdAndUpdate(
+            bulkUserId,
+            { amount, status: "Confirmed" }, // Update the amount and status
+            { new: true }
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        res.json({ success: true, message: "Order confirmed successfully!", order: updatedOrder });
+    } catch (error) {
+        console.error("Error confirming order:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-

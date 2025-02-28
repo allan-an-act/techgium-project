@@ -35,7 +35,7 @@ const userSchema=new mongoose.Schema({
     city:String,
     ewasteType: String,  // Renamed to avoid hyphen issues
     quantity: Number,    // Use Number instead of Integer
-    mobile: Number,
+    mobile: String,
     status: { type: String, default: "Pending" }
   
 })
@@ -64,26 +64,27 @@ const bulkUserSchema = new mongoose.Schema({
   companyName: String,
   companyAddress: String,
   name: String,
-  address: String,
+  gmail: String,
   state: String,
   district: String,
   city: String,
   ewasteType: String,
   quantity: Number,
   mobile: Number,
+  status: { type: String, default: "Pending" }
 });
 
-const BulkUser = mongoose.model("bulkUsers", bulkUserSchema);
+const BulkUser = mongoose.model("BulkUsers", bulkUserSchema);
 
-router.post('/postBulk', async (req, res) => {
+router.post('/bulk_next', async (req, res) => {
   try {
-    const { companyName, companyAddress, name, address, state, district, city, ewasteType, quantity, mobile } = req.body;
-    const bulk = new BulkUser({ companyName, companyAddress, name, address, state, district, city, ewasteType, quantity, mobile });
+    const { companyName, companyAddress, name, gmail, state, district, city, ewasteType, quantity, mobile } = req.body;
+    const bulk = new BulkUser({ companyName, companyAddress, name,gmail, state, district, city, ewasteType, quantity, mobile });
     await bulk.save();
     console.log(bulk);
-    res.send("Bulk form submission successful");
+    res.redirect('/bulk_next');
   } catch (error) {
-    res.status(500).send("Error saving data");
+    res.status(500).send(`Error saving data: ${error.message}`);
   }
 });
 
@@ -117,7 +118,7 @@ const Company = mongoose.model("Company", companySchema);
 // })
 
 
-router.post("/admin_dashboard", upload.single("certification_document"), async (req, res) => {
+router.post("/show_details", upload.single("certification_document"), async (req, res) => {
   try {
     const { user, email, pass, cpass, company_name, company_address, md_name, md_address, md_phone, company_phone, start_year, certification_number } = req.body;
 
@@ -144,7 +145,7 @@ router.post("/admin_dashboard", upload.single("certification_document"), async (
 
     await companyData.save();
     // res.json({ success: true, message: "Company details saved successfully!", redirect: "/admin_dashboard" });
-    res.redirect("/admin_dashboard");
+    res.redirect("/show_details");
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Error saving data", error: error.message });
@@ -226,4 +227,74 @@ router.post("/storeEmail", async (req, res) => {
 });
 
 
-module.exports = { db, users, BulkUser, Company, Vendor, Email, router };
+
+
+
+
+
+// BULK Email Schema
+const bulkemailSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  dateAdded: { type: Date, default: Date.now },
+});
+
+const bulk_Email = mongoose.models.bulkEmails || mongoose.model("bulkEmails", bulkemailSchema);
+
+// Route to store emails
+router.post("/storebulkEmail", async (req, res) => {
+  console.log(req.body)
+  try {
+    const { email } = req.body;
+    console.log(req.body)
+    if (!email) {
+      console.log("Email is missing");
+      return res.status(400).json({ message: "Email is required" });
+    }
+    // Check if email already exists
+    const existingEmail = await bulk_Email.findOne({ email });
+    if (existingEmail) {
+      return res.json({ redirectUrl: `/bulk_next?email=${email}`, message: "Email already exists" });
+      
+    }
+
+    const newEmail = new bulk_Email({ email });
+    await newEmail.save();
+    return res.json({ redirectUrl: "/bulk_user_form", message: "New email stored successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error storing email", error: error.message });
+  }
+});
+
+const amountSchema = new mongoose.Schema({
+  bulkUserId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  amount: { type: Number, required: true },
+  enteredBy: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  status:{type:String,default:"Pending"},
+});
+
+// ✅ Ensure the model is always available
+const AmountModel = mongoose.models.Amount || mongoose.model("Amount", amountSchema);
+
+
+async function storeAmountEntry({ bulkUserId, amount, enteredBy }) {
+  try {
+      console.log("🔹 Storing entry for:", { bulkUserId, amount, enteredBy });
+
+      const newAmountEntry = new AmountModel({
+          bulkUserId: new mongoose.Types.ObjectId(bulkUserId),
+          amount: parseFloat(amount),
+          enteredBy,
+      });
+
+      const result = await newAmountEntry.save();
+      console.log("✅ Amount entry saved:", result);
+      return result;
+  } catch (error) {
+      console.error("❌ Error storing amount entry:", error);
+      throw error;
+  }
+}
+
+
+module.exports = { db, users, BulkUser, Company, Vendor, Email,bulk_Email, AmountModel,storeAmountEntry, router };

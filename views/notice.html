@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ E-Waste Management Notice ⚡</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+       
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('https://source.unsplash.com/1600x900/?e-waste,recycling') no-repeat center center/cover;
+            color: #2c3e50;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 80%;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1, h2 {
+            color: #3498db;
+            text-align: center;
+            position: relative;
+        }
+        h1::after, h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background: #3498db;
+            margin: 10px auto;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            padding: 12px;
+            background: #e3f2fd;
+            border-left: 5px solid #3498db;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.3s;
+            position: relative;
+            animation: slideIn 1s ease-in-out;
+        }
+        li:hover {
+            background: #d6eaf8;
+            transform: translateX(10px);
+        }
+        strong {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: #3498db;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ Notice on E-Waste Management ⚠️</h1>
+        <p>Welcome to our <strong>♻️ E-Waste Management System</strong>! Our goal is to facilitate the efficient collection, proper segregation, and responsible recycling of electronic waste while ensuring <strong>🔒 data privacy and security</strong>.</p>
+       
+        <h2>🔄 How E-Waste is Managed?</h2>
+        <ul>
+            <li><strong>📦 User to Vendor:</strong> Users register on our platform and schedule a pickup.</li>
+            <li><strong>🚛 Vendor to Safe Organization:</strong> Vendors transfer e-waste to certified recycling organizations.</li>
+            <li><strong>🌍 Safe Recycling:</strong> Proper dismantling and recycling to minimize pollution.</li>
+            <li><strong>🔐 Data Protection:</strong> Secure data wiping before recycling electronic devices.</li>
+        </ul>
+
+        <h2>📅 How to Schedule an E-Waste Pickup?</h2>
+        <ul>
+            <li><strong>📝 Register:</strong> Sign up on our platform.</li>
+            <li><strong>📆 Choose Pickup Slot:</strong> Select a convenient date and time.</li>
+            <li><strong>🚚 Vendor Pickup:</strong> Vendor arrives to collect the e-waste.</li>
+            <li><strong>📡 Track Request:</strong> Users can monitor their request status.</li>
+        </ul>
+       
+        <h2>⚠️ How to Handle E-Waste?</h2>
+        <ul>
+            <li><strong>🚯 Avoid Dumping:</strong> Never dispose of e-waste in regular bins.</li>
+            <li><strong>📥 Store Safely:</strong> Keep old electronics in a designated area.</li>
+            <li><strong>✅ Use Registered Vendors:</strong> Ensure legal and responsible disposal.</li>
+            <li><strong>🔒 Data Security:</strong> Devices undergo thorough data wiping.</li>
+        </ul>
+       
+        <h2>🌱 Why is Responsible E-Waste Management Important?</h2>
+        <p>Proper e-waste management <strong>🌿 reduces pollution</strong>, <strong>💡 conserves resources</strong>, and prevents hazardous substances from harming the environment.</p>
+       
+        <h2>🤝 Join Us in Making a Difference</h2>
+        <p>By responsibly managing your e-waste, you contribute to a <strong>🌎 sustainable</strong> and <strong>🌳 greener future</strong>!</p>
+       
+        <div class="footer">
+            <p>📞 For more details, contact our support team or visit our website.</p>
+            <p>✅ Thank you for choosing responsible e-waste disposal!</p>
+        </div>
+    </div>
+</body>
+</html>

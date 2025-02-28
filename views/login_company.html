@@ -107,6 +107,7 @@ p a:hover {
                 </div>
                 <button type="submit" class="btn">Login</button>
             </form>
+            <div id="error-message" style="color: red; display: none;"></div>
             <p>Don't have an account? <a href="company_details_form">Sign up here</a>.</p>
         </div>
     </div>
@@ -132,7 +133,8 @@ p a:hover {
                     errorMessage.style.display = "block";
                     errorMessage.textContent = data.message;
                 } else {
-                    window.location.href = "/show_details"; // Redirect to dashboard
+                    const email = encodeURIComponent(data.email);
+                    window.location.href = `/show_details?email=${email}`;
                 }
             } catch (error) {
                 console.error("Error:", error);

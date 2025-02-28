@@ -125,7 +125,7 @@
     const messageDiv = document.getElementById('message');
 
     let generatedOtp = null;
-
+    let storedEmail=null;
     const sendOtp = async (email) => {
       try {
         const response = await fetch('http://localhost:3000/sendOtp', {
@@ -138,6 +138,7 @@
 
         const data = await response.json();
         generatedOtp = data.otp;
+        storedEmail = email; 
         messageDiv.textContent = 'OTP has been sent to your email.';
         otpSection.style.display = 'block';
       } catch (error) {
@@ -145,14 +146,36 @@
         messageDiv.style.color = 'red';
       }
     };
+    
+    const storeEmail = async (email) => {
+    try {
+      const response = await fetch("http://localhost:3000/storebulkEmail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
+      const data = await response.json();
+    
+    if (data.redirectUrl) {
+      messageDiv.textContent = data.message;
+      messageDiv.style.color = "green";
+      
+      // Redirect the user to the correct page
+      setTimeout(() => {
+        window.location.href = data.redirectUrl;
+      }, 1000);
+    }
+  } catch (error) {
+    messageDiv.textContent = "Error storing email.";
+    messageDiv.style.color = "red";
+  }
+  };
     const verifyOtp = (enteredOtp) => {
       if (enteredOtp === generatedOtp) {
         messageDiv.textContent = 'Email verified successfully!';
         messageDiv.style.color = 'green';
-        setTimeout(() => {
-          window.location.href = '/bulk_user_form';
-        }, 1000);
+        storeEmail(storedEmail);
       } else {
         messageDiv.textContent = 'Invalid OTP. Please try again.';
         messageDiv.style.color = 'red';

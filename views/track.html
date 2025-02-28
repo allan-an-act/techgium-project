@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>📍 Mobile Number Tracking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #121212; color: #fff; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .section { margin-bottom: 20px; padding: 20px; border-radius: 8px; background: #1e1e1e; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+    .hidden { display: none; }
+    #map { height: 400px; border-radius: 10px; margin-top: 20px; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-size: 16px; }
+    input { width: 100%; padding: 10px; border-radius: 5px; border: none; background: #2e2e2e; color: white; font-size: 16px; }
+    button { background: #00d9ff; color: black; padding: 12px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
+    button:hover { background: #00a6c7; }
+    .route-option { padding: 12px; border-radius: 5px; margin-top: 10px; background: #2e2e2e; cursor: pointer; transition: 0.3s; }
+    .route-option:hover { background: #00d9ff; color: black; }
+    .icon { margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="section" id="userInput">
+      <h2><i class="fa-solid fa-map-location-dot"></i> Enter Tracking Details</h2>
+      <div class="input-group">
+        <label><i class="fa-solid fa-phone"></i> Mobile Number to Track:</label>
+        <input type="tel" id="mobileNumber" required>
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-location-dot"></i> Current Location:</label>
+        <input type="text" id="currentLocation" required>
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-flag-checkered"></i> Destination:</label>
+        <input type="text" id="destination" required>
+      </div>
+      <button onclick="sendOTP()">📩 Submit Details</button>
+    </div>
+
+    <div class="section hidden" id="otpVerification">
+      <h2><i class="fa-solid fa-key"></i> OTP Verification</h2>
+      <p>An OTP has been sent. Please enter it below:</p>
+      <div class="input-group">
+        <input type="text" id="otp" maxlength="6" placeholder="Enter OTP">
+      </div>
+      <button onclick="verifyOTP()">✔ Verify OTP</button>
+    </div>
+
+    <div class="section hidden" id="routeSelection">
+      <h2><i class="fa-solid fa-route"></i> Select a Route</h2>
+      <div id="routes"></div>
+    </div>
+
+    <div class="section hidden" id="trackingSection">
+      <h2><i class="fa-solid fa-location-arrow"></i> Live Tracking</h2>
+      <div id="map"></div>
+      <p>Status: <span id="status">🔄 Tracking initiated...</span></p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    let map, marker, trackingInterval;
+    const routes = {
+      'coastal': { name: '🌊 Coastal Route', coordinates: [[13.0827, 80.2707], [11.6643, 78.1460], [10.7905, 78.7047], [8.7139, 77.7567]] },
+      'mountain': { name: '⛰ Mountain Route', coordinates: [[11.0168, 76.9558], [10.0159, 77.4829], [9.9252, 78.1198], [8.7139, 77.7567]] }
+    };
+
+    function sendOTP() {
+      sessionStorage.setItem('otp', Math.floor(100000 + Math.random() * 900000).toString());
+      alert(`OTP Sent: ${sessionStorage.getItem('otp')}`);
+      document.getElementById('userInput').classList.add('hidden');
+      document.getElementById('otpVerification').classList.remove('hidden');
+    }
+
+    function verifyOTP() {
+      const enteredOTP = document.getElementById('otp').value;
+      if (enteredOTP === sessionStorage.getItem('otp')) {
+        document.getElementById('otpVerification').classList.add('hidden');
+        showRoutes();
+      } else {
+        alert('❌ Invalid OTP, try again!');
+      }
+    }
+
+    function showRoutes() {
+      document.getElementById('routeSelection').classList.remove('hidden');
+      document.getElementById('routes').innerHTML = Object.entries(routes).map(([id, route]) => 
+        `<div class='route-option' onclick='startTracking("${id}")'>${route.name}</div>`).join('');
+    }
+
+    function startTracking(routeId) {
+      document.getElementById('routeSelection').classList.add('hidden');
+      document.getElementById('trackingSection').classList.remove('hidden');
+      if (!map) {
+        map = L.map('map').setView([10.7905, 78.7047], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      }
+      let currentRoute = routes[routeId].coordinates;
+      L.polyline(currentRoute, { color: 'cyan' }).addTo(map);
+      simulateTracking(currentRoute);
+    }
+
+    function simulateTracking(points) {
+      let step = 0;
+      marker = L.marker(points[0]).addTo(map);
+      trackingInterval = setInterval(() => {
+        if (step < points.length - 1) {
+          step++;
+          marker.setLatLng(points[step]);
+          map.panTo(points[step]);
+          document.getElementById('status').textContent = `🚗 Moving... ${Math.round((step / (points.length - 1)) * 100)}%`;
+        } else {
+          clearInterval(trackingInterval);
+          document.getElementById('status').textContent = '✅ Destination Reached!';
+        }
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
