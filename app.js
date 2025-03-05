@@ -279,15 +279,14 @@ app.get("/getBulk", async (req, res) => {
             return res.status(400).json({ error: "Email is required" });
         }
 
-        // Find user data
-        const userData = await BulkUser.findOne({ email: email });
+        const userData = await BulkUser.findOne({ gmail: email });
 
         if (!userData) {
             return res.status(404).json({ error: "User not found" });
         }
 
         // Find pending requests related to the user's company
-        const companyRequests = await BulkUser.find({ email: email, status: "Pending" });
+        const companyRequests = await BulkUser.find({ gmail: email, status: "Pending" });
 
         res.json({
             companyName: userData.companyName,
@@ -298,7 +297,8 @@ app.get("/getBulk", async (req, res) => {
             district: userData.district,
             mobile: userData.mobile,
             gmail: userData.email,
-            pendingRequests: companyRequests, // Now properly defined
+            pendingRequests: companyRequests,
+            id:userData._id.toString(), // Now properly defined
         });
     } catch (error) {
         console.error("Error fetching user data:", error);
@@ -423,25 +423,6 @@ app.get('/get_amount/:id', async (req, res) => {
     }
 });
 
-
-app.post("/confirm_order_com", async (req, res) => {
-    try {
-        console.log("🔹 Received order confirmation request:", req.body);
-
-        const { bulkUserId, amount, enteredBy } = req.body;
-        if (!bulkUserId || !amount || !enteredBy) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
-        }
-
-        const result = await storeAmountEntry({ bulkUserId, amount, enteredBy });
-
-        console.log("✅ Order confirmed:", result);
-        res.json({ success: true, message: "Order confirmed and amount added successfully", data: result });
-    } catch (error) {
-        console.error("❌ Error in confirm_order:", error);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
-    }
-});
 app.get("/getEwasteRequests", async (req, res) => {
     const gmail = req.query.email;
     if (!gmail) return res.status(400).json({ error: "Email is required" });
@@ -488,30 +469,95 @@ app.get("/get_confirmed_orders", async (req, res) => {
 });
 
 // Route to confirm an order
-app.post("/confirm_order_com", async (req, res) => {
-    try {
-        const { bulkUserId, amount, enteredBy } = req.body;
 
-        if (!bulkUserId || !amount) {
+app.post("/confirm_order_conf", async (req, res) => {
+    try {
+        console.log("🔹 Received order confirmation request:", req.body);
+        console.log("📩 Received Data:", JSON.stringify(req.body, null, 2));
+        const { bulkUserId, amount, enteredBy } = req.body;
+        if (!bulkUserId || !amount || !enteredBy) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const updatedOrder = await BulkUser.findByIdAndUpdate(
-            bulkUserId,
-            { amount, status: "Confirmed" }, // Update the amount and status
-            { new: true }
-        );
+        const result = await storeAmountEntry({ bulkUserId, amount, enteredBy });
 
-        if (!updatedOrder) {
-            return res.status(404).json({ success: false, message: "Order not found" });
-        }
-
-        res.json({ success: true, message: "Order confirmed successfully!", order: updatedOrder });
+        console.log("✅ Order confirmed:", result);
+        res.json({ success: true, message: "Order confirmed and amount added successfully", data: result });
     } catch (error) {
-        console.error("Error confirming order:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        console.error("❌ Error in confirm_order:", error);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 });
+// app.post("/confirm_order_upd", async (req, res) => {
+//     try {
+//         const { bulkUserId, amount, enteredBy } = req.body;
+
+//         if (!bulkUserId || !amount) {
+//             return res.status(400).json({ success: false, message: "Missing required fields" });
+//         }
+
+//         const updatedOrder = await BulkUser.findByIdAndUpdate(
+//             bulkUserId,
+//             { amount, status: "Confirmed" }, // Update the amount and status
+//             { new: true }
+//         );
+
+//         if (!updatedOrder) {
+//             return res.status(404).json({ success: false, message: "Order not found" });
+//         }
+
+//         res.json({ success: true, message: "Order confirmed successfully!", order: updatedOrder });
+//     } catch (error) {
+//         console.error("Error confirming order:", error);
+//         res.status(500).json({ success: false, message: "Internal Server Error" });
+//     }
+// });
+app.get("/getPendingRequests", async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        console.log("Received userId:", userId);
+
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        // Convert userId string to MongoDB ObjectId
+        const objectId = new mongoose.Types.ObjectId(userId);
+
+        // Fetch pending requests
+        const pendingRequests = await AmountModel.find({ bulkUserId: objectId, status: "Pending" });
+
+        if (!pendingRequests || pendingRequests.length === 0) {
+            return res.status(404).json({ error: "No pending requests found." });
+        }
+
+        res.json(pendingRequests);
+    } catch (error) {
+        console.error("Error fetching pending requests:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+app.get("/get_company_username", async (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        const company = await Company.findOne({ email: email }); // Search company by email
+        if (company) {
+            console.log("Found company", company.company_name);
+            res.json({ username: company.company_name});
+        } else {
+            res.status(404).json({ error: "Company not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

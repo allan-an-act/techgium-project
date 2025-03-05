@@ -92,7 +92,7 @@
   </header>
   <div class="container">
     <h3>Bulk User Form</h3>
-    <form action="/bulk_next" method="POST" id="bulk-form">
+    <form id="bulk-form">
       <input type="text" name="companyName" placeholder="Company Name" required>
       <input type="text" name="companyAddress" placeholder="Company Address" required>
       <input type="text" name="name" placeholder="Contact Name" required>
@@ -135,6 +135,26 @@
 
       <button type="submit" class="btn">Submit</button>
     </form>
+    <script>
+      function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      }
+      const emailFromUrl = getQueryParam("email");
+    
+      if (emailFromUrl) {
+        document.querySelector('input[name="gmail"]').value = emailFromUrl;
+      }
+      document.getElementById("bulk-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+    
+        const email = document.querySelector('input[name="gmail"]').value.trim();
+        if (email) {
+          window.location.href = `/bulk_next?email=${encodeURIComponent(email)}`;
+        }
+      });
+    </script>
+    
   </div>
 </body>
 </html>

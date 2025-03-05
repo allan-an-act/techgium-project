@@ -227,11 +227,6 @@ router.post("/storeEmail", async (req, res) => {
 });
 
 
-
-
-
-
-
 // BULK Email Schema
 const bulkemailSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -259,7 +254,7 @@ router.post("/storebulkEmail", async (req, res) => {
 
     const newEmail = new bulk_Email({ email });
     await newEmail.save();
-    return res.json({ redirectUrl: "/bulk_user_form", message: "New email stored successfully" });
+    return res.json({ redirectUrl: `/bulk_user_form?email=${email}`, message: "New email stored successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error storing email", error: error.message });
   }
